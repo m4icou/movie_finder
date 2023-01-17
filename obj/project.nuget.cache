@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "dgSpecHash": "9h/PAd76m9aJWAhQXiGigE5viDO2R2i0BT6pwFpeWEE5t6zB0a0aERW6ET3gGnMMgMsD9nl6DBJMF6TyA6BFAQ==",
+  "success": true,
+  "projectFilePath": "/home/usuario_desejado/projetos/movie_finder/movie_finder.csproj",
+  "expectedPackageFiles": [
+    "/home/usuario_desejado/.nuget/packages/microsoft.extensions.apidescription.server/3.0.0/microsoft.extensions.apidescription.server.3.0.0.nupkg.sha512",
+    "/home/usuario_desejado/.nuget/packages/microsoft.openapi/1.2.3/microsoft.openapi.1.2.3.nupkg.sha512",
+    "/home/usuario_desejado/.nuget/packages/swashbuckle.aspnetcore/6.2.3/swashbuckle.aspnetcore.6.2.3.nupkg.sha512",
+    "/home/usuario_desejado/.nuget/packages/swashbuckle.aspnetcore.swagger/6.2.3/swashbuckle.aspnetcore.swagger.6.2.3.nupkg.sha512",
+    "/home/usuario_desejado/.nuget/packages/swashbuckle.aspnetcore.swaggergen/6.2.3/swashbuckle.aspnetcore.swaggergen.6.2.3.nupkg.sha512",
+    "/home/usuario_desejado/.nuget/packages/swashbuckle.aspnetcore.swaggerui/6.2.3/swashbuckle.aspnetcore.swaggerui.6.2.3.nupkg.sha512"
+  ],
+  "logs": []
+}

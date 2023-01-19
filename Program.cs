@@ -1,3 +1,5 @@
+using MovieFinder.Domain.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -7,6 +9,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+
+builder.Services.AddSingleton<AtorService>();
+builder.Services.AddSingleton<FilmeService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

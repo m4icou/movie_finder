@@ -55,7 +55,7 @@ public class AtorService
             cmdStr += $@"insert vertex ator
                             (nome) 
                         values 
-                            ""{atores.ElementAt(x).Id}"":(""{atores.ElementAt(x).Nome}"");";
+                            {atores.ElementAt(x).Id}:(""{atores.ElementAt(x).Nome}"");";
 
         await _graphClient.OpenAsync(_iP, _port);
         _authResponse = await _graphClient.AuthenticateAsync(_connUser, _connPwd);

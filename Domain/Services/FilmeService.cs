@@ -44,16 +44,18 @@ public class FilmeService
         _port = config.GetValue<int>("BusCon:Porta");
     }
 
-    public async Task CadastrarFilme(string id, string titulo, decimal popularidade)
+    public async Task CadastrarFilmes(IEnumerable<Filme> filmes)
     {
-        var cmd = _cmdStr + $@"insert vertex filme
+        string cmdStr = _cmdStr;
+        for (var x = 0; x < filmes.Count(); x++)
+            cmdStr = _cmdStr + $@"insert vertex filme
                                     (titulo, popularidade) 
                                 values 
-                                    ""{id}"":(""{titulo}"", ""{popularidade}"")";
+                                    {filmes.ElementAt(x).Id}:(""{filmes.ElementAt(x).Titulo}"", {filmes.ElementAt(x).Popularidade.ToString().Replace(",",".")});";
 
         await _graphClient.OpenAsync(_iP, _port);
         _authResponse = await _graphClient.AuthenticateAsync(_connUser, _connPwd);
-        var executionResponse = await _graphClient.ExecuteAsync(_authResponse.Session_id, cmd);
+        var executionResponse = await _graphClient.ExecuteAsync(_authResponse.Session_id, cmdStr);
 
         await _graphClient.SignOutAsync(_authResponse.Session_id);
     }

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using MovieFinder.Controllers.Messages;
+using MovieFinder.Domain.Entities;
 using MovieFinder.Domain.Services;
 
 namespace SocialNetwork.Controllers;
@@ -23,6 +24,8 @@ public class MovieController : ControllerBase
 
     private string _apiKey = null!;
 
+    private HttpClient _client = null!;
+
     /// <summary>
     /// Construtor padrão com parâmetros.
     /// </summary>
@@ -32,23 +35,46 @@ public class MovieController : ControllerBase
     {
         _atorService = atorService;
         _filmeService = filmeService;
+        _urlBase = "https://api.themoviedb.org/3/";
+        _apiKey = "e5842c7912765a272ea1feaece9eabf0";
+        _client = new HttpClient();
     }
 
     [HttpPost("carregar-dados")]
     public async Task CarregarDados(IEnumerable<string> titulosFilmes)
     {
-        await RecuperarFilme(titulosFilmes.First());
+        var filmes = new List<Filme>();
+        var atores = new List<Ator>();
+        foreach (var titulo in titulosFilmes)
+        {
+            var filme = await RecuperarFilme(titulo);
+            filmes.Add(new Filme(filme.id, filme.title, filme.popularity));
+
+            var atoresFilme = await RecuperarAtoresFilme(filme.id);
+            foreach(var atorFilme in atoresFilme)
+                if (!atores.Any(a => a.Id == atorFilme.id))
+                    atores.Add(new Ator(atorFilme.id, atorFilme.name));
+        }
+
+        await _filmeService.CadastrarFilmes(filmes);
+        await _atorService.SalvarAtoresAsync(atores);
     }
 
-    private async Task RecuperarFilme(string titulo)
+    private async Task<MovieResponseMessage> RecuperarFilme(string titulo)
     {
-        _urlBase = "https://api.themoviedb.org/3/";
-        _apiKey = "e5842c7912765a272ea1feaece9eabf0";
-
-        var client = new HttpClient();
-        var result = await client.GetAsync(_urlBase + $"search/movie?api_key={_apiKey}&language=en-US&page=1&include_adult=false&query={titulo}");
+        var result = await _client.GetAsync(_urlBase + $"search/movie?api_key={_apiKey}&language=en-US&page=1&include_adult=false&query={titulo}");
 
         var resJson = await result.Content.ReadAsStringAsync();
         var searchResult = JsonSerializer.Deserialize<SearchMovieResponseMessage>(resJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+        return searchResult.results.First();
+    }
+
+    private async Task<IEnumerable<ActorResponseMessage>> RecuperarAtoresFilme(int idFilme)
+    {
+        var result = await _client.GetAsync(_urlBase + $"movie/{idFilme}/credits?api_key={_apiKey}");
+
+        var resJson = await result.Content.ReadAsStringAsync();
+        var searchResult = JsonSerializer.Deserialize<GetMovieCreditsResponseMessage>(resJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true })!;
+        return searchResult.cast.Take(5);
     }
 }

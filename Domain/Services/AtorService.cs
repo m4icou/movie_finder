@@ -64,8 +64,19 @@ public class AtorService
         await _graphClient.SignOutAsync(_authResponse.Session_id);
     }
 
-    public async Task SalvarAtuacao(string idFilme, string idAtor)
+    public async Task SalvarAtuacoesFilmeAsync(int idFilme, IEnumerable<int> idsAtores)
     {
-        await Task.Yield();
+        string cmdStr = _cmdStr;
+        for (var x = 0; x < idsAtores.Count(); x++)
+            cmdStr += $@"insert edge atua
+                            (data_atuacao) 
+                        values
+                            {idsAtores.ElementAt(x)} -> {idFilme}:(datetime(""{DateTime.Now.ToString("s")}""));";
+
+        await _graphClient.OpenAsync(_iP, _port);
+        _authResponse = await _graphClient.AuthenticateAsync(_connUser, _connPwd);
+        var executionResponse = await _graphClient.ExecuteAsync(_authResponse.Session_id, cmdStr);
+
+        await _graphClient.SignOutAsync(_authResponse.Session_id);
     }
 }

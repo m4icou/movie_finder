@@ -45,6 +45,7 @@ public class MovieController : ControllerBase
     {
         var filmes = new List<Filme>();
         var atores = new List<Ator>();
+        var atuacoes = new Dictionary<int, IEnumerable<int>>();
         foreach (var titulo in titulosFilmes)
         {
             var filme = await RecuperarFilme(titulo);
@@ -54,10 +55,15 @@ public class MovieController : ControllerBase
             foreach(var atorFilme in atoresFilme)
                 if (!atores.Any(a => a.Id == atorFilme.id))
                     atores.Add(new Ator(atorFilme.id, atorFilme.name));
+
+            atuacoes.Add(filme.id, atores.Select(a => a.Id));
         }
 
         await _filmeService.CadastrarFilmes(filmes);
         await _atorService.SalvarAtoresAsync(atores);
+
+        foreach (var item in atuacoes)
+            await _atorService.SalvarAtuacoesFilmeAsync(item.Key, item.Value);
     }
 
     private async Task<MovieResponseMessage> RecuperarFilme(string titulo)

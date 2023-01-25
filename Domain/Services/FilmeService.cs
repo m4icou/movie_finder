@@ -44,6 +44,9 @@ public class FilmeService
         _port = config.GetValue<int>("BusCon:Porta");
     }
 
+    // TODO: Listar filmes.
+    // TODO: Limpar filmes.
+
     public async Task CadastrarFilmes(IEnumerable<Filme> filmes)
     {
         string cmdStr = _cmdStr;

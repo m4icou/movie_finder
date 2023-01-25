@@ -56,7 +56,7 @@ public class MovieController : ControllerBase
                 if (!atores.Any(a => a.Id == atorFilme.id))
                     atores.Add(new Ator(atorFilme.id, atorFilme.name));
 
-            atuacoes.Add(filme.id, atores.Select(a => a.Id));
+            atuacoes.Add(filme.id, atoresFilme.Select(a => a.id));
         }
 
         await _filmeService.CadastrarFilmes(filmes);
@@ -64,6 +64,18 @@ public class MovieController : ControllerBase
 
         foreach (var item in atuacoes)
             await _atorService.SalvarAtuacoesFilmeAsync(item.Key, item.Value);
+    }
+
+    [HttpGet("listar-atores")]
+    public async Task<IEnumerable<Ator>?> ListarAtores()
+    {
+        return await _atorService.ListarAtoresAsync();
+    }
+
+    [HttpGet("listar-coatuacoes/{idAtor}")]
+    public async Task<IEnumerable<Ator>?> ListarCoatuacoes([FromRoute] int idAtor)
+    {
+        return await _atorService.ListarAtoresCoatuacaoAsync(idAtor);
     }
 
     private async Task<MovieResponseMessage> RecuperarFilme(string titulo)

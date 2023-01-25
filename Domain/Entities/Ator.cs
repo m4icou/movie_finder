@@ -8,7 +8,7 @@ public class Ator
     /// <summary>
     /// Código de identificação do ator.
     /// </summary>
-    public int Id { get; set; }
+    public Int64 Id { get; set; }
 
     /// <summary>
     /// Nome do ator.

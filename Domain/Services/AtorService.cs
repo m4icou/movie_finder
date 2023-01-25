@@ -48,6 +48,49 @@ public class AtorService
     /// </summary>
     /// <param name="atores">Lista contendo os atores a serem salvos.</param>
     /// <returns>Uma lista contendo os códigos de identificação dos atores salvos.</returns>
+    public async Task<IEnumerable<Ator>?> ListarAtoresAsync()
+    {
+        string cmdStr = _cmdStr + 
+                        $@"match (v:ator) 
+                            return 
+                                toInteger(id(v)) as id, 
+                                v.ator.nome as nome
+                            limit 100;";
+
+        await _graphClient.OpenAsync(_iP, _port);
+        _authResponse = await _graphClient.AuthenticateAsync(_connUser, _connPwd);
+        var atores = await _graphClient
+            .ExecuteAsync(_authResponse.Session_id, cmdStr)
+            .ToListAsync<Ator>();
+
+        await _graphClient.SignOutAsync(_authResponse.Session_id);
+        return atores;
+    }
+
+    public async Task<IEnumerable<Ator>?> ListarAtoresCoatuacaoAsync(Int64 idAtor)
+    {
+        string cmdStr = _cmdStr + 
+                        $@"MATCH (v1:ator)-->(v)<--(v2)
+                            WHERE id(v2) == {idAtor}
+                            RETURN 
+                                toInteger(id(v1)) as id, 
+                                v1.ator.nome as nome;";
+
+        await _graphClient.OpenAsync(_iP, _port);
+        _authResponse = await _graphClient.AuthenticateAsync(_connUser, _connPwd);
+        var atores = await _graphClient
+            .ExecuteAsync(_authResponse.Session_id, cmdStr)
+            .ToListAsync<Ator>();
+
+        await _graphClient.SignOutAsync(_authResponse.Session_id);
+        return atores;
+    }
+
+    /// <summary>
+    /// Método responsável por salvar uma lista de atores na base de dados.
+    /// </summary>
+    /// <param name="atores">Lista contendo os atores a serem salvos.</param>
+    /// <returns>Uma lista contendo os códigos de identificação dos atores salvos.</returns>
     public async Task SalvarAtoresAsync(IEnumerable<Ator> atores)
     {
         string cmdStr = _cmdStr;
@@ -63,6 +106,9 @@ public class AtorService
 
         await _graphClient.SignOutAsync(_authResponse.Session_id);
     }
+
+    // TODO: Listar atores.
+    // TODO: Limpar atores.
 
     public async Task SalvarAtuacoesFilmeAsync(int idFilme, IEnumerable<int> idsAtores)
     {

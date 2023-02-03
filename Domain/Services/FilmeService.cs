@@ -1,4 +1,3 @@
-using System.Text.Json;
 using MovieFinder.Domain.Entities;
 using Nebula.Graph;
 using NebulaNet;
@@ -44,17 +43,38 @@ public class FilmeService
         _port = config.GetValue<int>("BusCon:Porta");
     }
 
-    // TODO: Listar filmes.
-    // TODO: Limpar filmes.
+    public async Task<IEnumerable<Filme>?> ListarFilmesAsync()
+    {
+        string cmdStr = _cmdStr + 
+                        $@"match (v:filme) 
+                            return 
+                                id(v) as id, 
+                                v.filme.titulo as titulo,
+                                toString(v.filme.popularidade) as popularidade
+                            limit 100;";
+
+        await _graphClient.OpenAsync(_iP, _port);
+        _authResponse = await _graphClient.AuthenticateAsync(_connUser, _connPwd);
+        var filmes = await _graphClient
+            .ExecuteAsync(_authResponse.Session_id, cmdStr)
+            .ToListAsync<Filme>();
+
+        await _graphClient.SignOutAsync(_authResponse.Session_id);
+        return filmes;
+    }
 
     public async Task CadastrarFilmes(IEnumerable<Filme> filmes)
     {
         string cmdStr = _cmdStr;
         for (var x = 0; x < filmes.Count(); x++)
-            cmdStr = _cmdStr + $@"insert vertex filme
-                                    (titulo, popularidade) 
-                                values 
-                                    {filmes.ElementAt(x).Id}:(""{filmes.ElementAt(x).Titulo}"", {filmes.ElementAt(x).Popularidade.ToString().Replace(",",".")});";
+        {
+            var popularidade = filmes.ElementAt(x).Popularidade.ToString().Replace(",", ".");
+            cmdStr += _cmdStr + 
+                        $@"insert vertex filme
+                                (titulo, popularidade) 
+                            values 
+                                ""{filmes.ElementAt(x).Id}"":(""{filmes.ElementAt(x).Titulo}"", {popularidade});";
+        }
 
         await _graphClient.OpenAsync(_iP, _port);
         _authResponse = await _graphClient.AuthenticateAsync(_connUser, _connPwd);

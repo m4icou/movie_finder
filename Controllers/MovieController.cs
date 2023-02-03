@@ -45,18 +45,20 @@ public class MovieController : ControllerBase
     {
         var filmes = new List<Filme>();
         var atores = new List<Ator>();
-        var atuacoes = new Dictionary<int, IEnumerable<int>>();
+        var atuacoes = new Dictionary<string, IEnumerable<string>>();
         foreach (var titulo in titulosFilmes)
         {
-            var filme = await RecuperarFilme(titulo);
-            filmes.Add(new Filme(filme.id, filme.title, filme.popularity));
+            var filmeResponse = await RecuperarFilme(titulo);
+            var filme = (Filme)filmeResponse;
+            filmes.Add(filme);
 
-            var atoresFilme = await RecuperarAtoresFilme(filme.id);
-            foreach(var atorFilme in atoresFilme)
-                if (!atores.Any(a => a.Id == atorFilme.id))
-                    atores.Add(new Ator(atorFilme.id, atorFilme.name));
+            var atoresResponse = await RecuperarAtoresFilme(filmeResponse.id);
+            var atoresFilme = atoresResponse.Select(a => (Ator)a);
+            foreach(var response in atoresResponse)
+                if (!atores.Any(a => a.Id == "a" + response.id))
+                    atores.Add(response);
 
-            atuacoes.Add(filme.id, atoresFilme.Select(a => a.id));
+            atuacoes.Add(filme.Id, atoresFilme.Select(a => a.Id));
         }
 
         await _filmeService.CadastrarFilmes(filmes);
@@ -72,8 +74,14 @@ public class MovieController : ControllerBase
         return await _atorService.ListarAtoresAsync();
     }
 
+    [HttpGet("listar-filmes")]
+    public async Task<IEnumerable<Filme>?> ListarFilmes()
+    {
+        return await _filmeService.ListarFilmesAsync();
+    }
+
     [HttpGet("listar-coatuacoes/{idAtor}")]
-    public async Task<IEnumerable<Ator>?> ListarCoatuacoes([FromRoute] int idAtor)
+    public async Task<IEnumerable<Ator>?> ListarCoatuacoes([FromRoute] string idAtor)
     {
         return await _atorService.ListarAtoresCoatuacaoAsync(idAtor);
     }

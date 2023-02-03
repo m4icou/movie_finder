@@ -8,7 +8,7 @@ public class Ator
     /// <summary>
     /// Código de identificação do ator.
     /// </summary>
-    public Int64 Id { get; set; }
+    public string Id { get; set; } = null!;
 
     /// <summary>
     /// Nome do ator.
@@ -20,7 +20,7 @@ public class Ator
     /// </summary>
     /// <param name="id">Código de identificação do usuário.</param>
     /// <param name="nome">Nome do usuário.</param>
-    public Ator(int id, string nome)
+    public Ator(string id, string nome)
     {
         Id = id;
         Nome = nome;

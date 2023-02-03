@@ -53,7 +53,7 @@ public class AtorService
         string cmdStr = _cmdStr + 
                         $@"match (v:ator) 
                             return 
-                                toInteger(id(v)) as id, 
+                                id(v) as id, 
                                 v.ator.nome as nome
                             limit 100;";
 
@@ -67,13 +67,13 @@ public class AtorService
         return atores;
     }
 
-    public async Task<IEnumerable<Ator>?> ListarAtoresCoatuacaoAsync(Int64 idAtor)
+    public async Task<IEnumerable<Ator>?> ListarAtoresCoatuacaoAsync(string idAtor)
     {
         string cmdStr = _cmdStr + 
                         $@"MATCH (v1:ator)-->(v)<--(v2)
-                            WHERE id(v2) == {idAtor}
+                            WHERE id(v2) == ""{idAtor}""
                             RETURN 
-                                toInteger(id(v1)) as id, 
+                                id(v1) as id, 
                                 v1.ator.nome as nome;";
 
         await _graphClient.OpenAsync(_iP, _port);
@@ -98,7 +98,7 @@ public class AtorService
             cmdStr += $@"insert vertex ator
                             (nome) 
                         values 
-                            {atores.ElementAt(x).Id}:(""{atores.ElementAt(x).Nome}"");";
+                            ""{atores.ElementAt(x).Id}"":(""{atores.ElementAt(x).Nome}"");";
 
         await _graphClient.OpenAsync(_iP, _port);
         _authResponse = await _graphClient.AuthenticateAsync(_connUser, _connPwd);
@@ -107,17 +107,15 @@ public class AtorService
         await _graphClient.SignOutAsync(_authResponse.Session_id);
     }
 
-    // TODO: Listar atores.
-    // TODO: Limpar atores.
-
-    public async Task SalvarAtuacoesFilmeAsync(int idFilme, IEnumerable<int> idsAtores)
+    public async Task SalvarAtuacoesFilmeAsync(string idFilme, IEnumerable<string> idsAtores)
     {
         string cmdStr = _cmdStr;
+        var data = DateTime.Now.ToString("s");
         for (var x = 0; x < idsAtores.Count(); x++)
             cmdStr += $@"insert edge atua
                             (data_atuacao) 
                         values
-                            {idsAtores.ElementAt(x)} -> {idFilme}:(datetime(""{DateTime.Now.ToString("s")}""));";
+                            ""{idsAtores.ElementAt(x)}"" -> ""{idFilme}"":(datetime(""{data}""));";
 
         await _graphClient.OpenAsync(_iP, _port);
         _authResponse = await _graphClient.AuthenticateAsync(_connUser, _connPwd);

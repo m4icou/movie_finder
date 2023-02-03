@@ -8,7 +8,7 @@ public class Filme
     /// <summary>
     /// Código de identificação do filme.
     /// </summary>
-    public int Id { get; set; }
+    public string Id { get; set; } = null!;
 
     /// <summary>
     /// Título do filme.
@@ -18,7 +18,7 @@ public class Filme
     /// <summary>
     /// Popularidade percentual do filme.
     /// </summary>
-    public decimal Popularidade { get; set; }
+    public string Popularidade { get; set; } = null!;
 
     /// <summary>
     /// Construtor padrão com parâmetros.
@@ -26,7 +26,7 @@ public class Filme
     /// <param name="id">Código de identificação do filme.</param>
     /// <param name="titulo">Título do filme.</param>
     /// <param name="popularidade">Popularidade percentual do filme.</param>
-    public Filme(int id, string titulo, decimal popularidade)
+    public Filme(string id, string titulo, string popularidade)
     {
         Id = id;
         Titulo = titulo;

@@ -4,15 +4,15 @@ MOVIE FINDER
 
 =============================================
 
-- CRUD de atores
+- CRUD de atores - OK
 
-- CRUD de filmes
+- CRUD de filmes - OK
 
-- Criar edge "atua" para relação ator x filme
+- Criar edge "atua" para relação ator x filme - OK
 
 - Carregamento de dados
-	Fazer um carregamento de dados baseado no nome dos atores, trazendo todos os filmes atuados por eles.
+	Fazer um carregamento de dados baseado no nome dos atores, trazendo todos os filmes atuados por eles. OK
 
 - Recuperar dados de atores que contracenaram com atores, ou contracenaram com atores que contracenaram com atores, etc.
 
-
+- Criar uma relação onde cada ator segue os atores com os quais eles contracenaram.

@@ -82,4 +82,18 @@ public class FilmeService
 
         await _graphClient.SignOutAsync(_authResponse.Session_id);
     }
+
+    public async Task LimparAsync()
+    {
+        string cmdStr = _cmdStr + 
+                            $@"LOOKUP ON filme 
+                                YIELD id(vertex) as id |
+                                delete vertex $-.id with edge;";
+
+        await _graphClient.OpenAsync(_iP, _port);
+        _authResponse = await _graphClient.AuthenticateAsync(_connUser, _connPwd);
+        var executionResponse = await _graphClient.ExecuteAsync(_authResponse.Session_id, cmdStr);
+
+        await _graphClient.SignOutAsync(_authResponse.Session_id);
+    }
 }

@@ -40,38 +40,10 @@ public class MovieController : ControllerBase
         _client = new HttpClient();
     }
 
-    [HttpPost("carregar-dados")]
-    public async Task CarregarDados(IEnumerable<string> titulosFilmes)
-    {
-        var filmes = new List<Filme>();
-        var atores = new List<Ator>();
-        var atuacoes = new Dictionary<string, IEnumerable<string>>();
-        foreach (var titulo in titulosFilmes)
-        {
-            var filmeResponse = await RecuperarFilme(titulo);
-            var filme = (Filme)filmeResponse;
-            filmes.Add(filme);
-
-            var atoresResponse = await RecuperarAtoresFilme(filmeResponse.id);
-            var atoresFilme = atoresResponse.Select(a => (Ator)a);
-            foreach(var response in atoresResponse)
-                if (!atores.Any(a => a.Id == "a" + response.id))
-                    atores.Add(response);
-
-            atuacoes.Add(filme.Id, atoresFilme.Select(a => a.Id));
-        }
-
-        await _filmeService.CadastrarFilmes(filmes);
-        await _atorService.SalvarAtoresAsync(atores);
-
-        foreach (var item in atuacoes)
-            await _atorService.SalvarAtuacoesFilmeAsync(item.Key, item.Value);
-    }
-
     [HttpGet("listar-atores")]
     public async Task<IEnumerable<Ator>?> ListarAtores()
     {
-        return await _atorService.ListarAtoresAsync();
+        return await _atorService.ListarAsync();
     }
 
     [HttpGet("listar-filmes")]
@@ -84,6 +56,57 @@ public class MovieController : ControllerBase
     public async Task<IEnumerable<Ator>?> ListarCoatuacoes([FromRoute] string idAtor)
     {
         return await _atorService.ListarAtoresCoatuacaoAsync(idAtor);
+    }
+
+    [HttpGet("listar-seguidores/{idAtor}/{passos}")]
+    public async Task<IEnumerable<Ator>?> ListarSeguidores([FromRoute] string idAtor, [FromRoute] int passos)
+    {
+        return await _atorService.ListarSeguidores(idAtor, passos);
+    }
+
+    [HttpPost("carregar-dados")]
+    public async Task CarregarDados(IEnumerable<string> titulosFilmes)
+    {
+        var filmes = new List<Filme>();
+        var atores = new List<Ator>();
+        var atuacoes = new Dictionary<string, IEnumerable<string>>();
+        foreach (var titulo in titulosFilmes)
+        {
+            // Recupera o filme.
+            var filmeResponse = await RecuperarFilme(titulo);
+            var filme = (Filme)filmeResponse;
+            filmes.Add(filme);
+
+            // Recupera os atores do filme e salva na lista de atuações.
+            var atoresResponse = await RecuperarAtoresFilme(filmeResponse.id);
+            var atoresFilme = atoresResponse.Select(a => (Ator)a);
+            atuacoes.Add(filme.Id, atoresFilme.Select(a => a.Id));
+
+            // Relaciona atores seguidos por cada ator.
+            await _atorService.SalvarAsync(atoresFilme);
+            foreach (var ator in atoresFilme)
+            {
+                var idsAtores = atoresFilme.Select(a => a.Id).Where(i => i != ator.Id);
+                await _atorService.SeguirAsync(ator.Id, idsAtores, DateTime.Now);
+            }
+        }
+
+        // Cadastra o filme e salva as atuações.
+        await _filmeService.CadastrarFilmes(filmes);
+        foreach (var item in atuacoes)
+            await _atorService.SalvarAtuacoesFilmeAsync(item.Key, item.Value);
+    }
+
+    [HttpDelete("limpar-filmes")]
+    public async Task LimparFilmes()
+    {
+        await _filmeService.LimparAsync();
+    }
+
+    [HttpDelete("limpar-atores")]
+    public async Task LimparAtores()
+    {
+        await _atorService.LimparAsync();
     }
 
     private async Task<MovieResponseMessage> RecuperarFilme(string titulo)

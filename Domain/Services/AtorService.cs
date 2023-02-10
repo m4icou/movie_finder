@@ -43,14 +43,9 @@ public class AtorService
         _port = config.GetValue<int>("BusCon:Porta");
     }
 
-    /// <summary>
-    /// Método responsável por salvar uma lista de atores na base de dados.
-    /// </summary>
-    /// <param name="atores">Lista contendo os atores a serem salvos.</param>
-    /// <returns>Uma lista contendo os códigos de identificação dos atores salvos.</returns>
-    public async Task<IEnumerable<Ator>?> ListarAtoresAsync()
+    public async Task<IEnumerable<Ator>?> ListarAsync()
     {
-        string cmdStr = _cmdStr + 
+        string cmdStr = _cmdStr +
                         $@"match (v:ator) 
                             return 
                                 id(v) as id, 
@@ -69,7 +64,7 @@ public class AtorService
 
     public async Task<IEnumerable<Ator>?> ListarAtoresCoatuacaoAsync(string idAtor)
     {
-        string cmdStr = _cmdStr + 
+        string cmdStr = _cmdStr +
                         $@"MATCH (v1:ator)-->(v)<--(v2)
                             WHERE id(v2) == ""{idAtor}""
                             RETURN 
@@ -86,16 +81,31 @@ public class AtorService
         return atores;
     }
 
-    /// <summary>
-    /// Método responsável por salvar uma lista de atores na base de dados.
-    /// </summary>
-    /// <param name="atores">Lista contendo os atores a serem salvos.</param>
-    /// <returns>Uma lista contendo os códigos de identificação dos atores salvos.</returns>
-    public async Task SalvarAtoresAsync(IEnumerable<Ator> atores)
+    public async Task<IEnumerable<Ator>?> ListarSeguidores(string idAtor, int passos = 1)
+    {
+        string cmdStr = _cmdStr +
+                            $@"GO {passos} STEPS 
+                                FROM ""{idAtor}"" 
+                                OVER segue 
+                                YIELD 
+                                    id($$) as id,
+                                    properties($$).nome as nome;";
+
+        await _graphClient.OpenAsync(_iP, _port);
+        _authResponse = await _graphClient.AuthenticateAsync(_connUser, _connPwd);
+        var atores = await _graphClient
+            .ExecuteAsync(_authResponse.Session_id, cmdStr)
+            .ToListAsync<Ator>();
+
+        await _graphClient.SignOutAsync(_authResponse.Session_id);
+        return atores;
+    }
+
+    public async Task SalvarAsync(IEnumerable<Ator> atores)
     {
         string cmdStr = _cmdStr;
         for (var x = 0; x < atores.Count(); x++)
-            cmdStr += $@"insert vertex ator
+            cmdStr += $@"insert vertex if not exists ator
                             (nome) 
                         values 
                             ""{atores.ElementAt(x).Id}"":(""{atores.ElementAt(x).Nome}"");";
@@ -116,6 +126,37 @@ public class AtorService
                             (data_atuacao) 
                         values
                             ""{idsAtores.ElementAt(x)}"" -> ""{idFilme}"":(datetime(""{data}""));";
+
+        await _graphClient.OpenAsync(_iP, _port);
+        _authResponse = await _graphClient.AuthenticateAsync(_connUser, _connPwd);
+        var executionResponse = await _graphClient.ExecuteAsync(_authResponse.Session_id, cmdStr);
+
+        await _graphClient.SignOutAsync(_authResponse.Session_id);
+    }
+
+    public async Task LimparAsync()
+    {
+        string cmdStr = _cmdStr + 
+                            $@"LOOKUP ON ator 
+                                YIELD id(vertex) as id |
+                                delete vertex $-.id with edge;";
+
+        await _graphClient.OpenAsync(_iP, _port);
+        _authResponse = await _graphClient.AuthenticateAsync(_connUser, _connPwd);
+        var executionResponse = await _graphClient.ExecuteAsync(_authResponse.Session_id, cmdStr);
+
+        await _graphClient.SignOutAsync(_authResponse.Session_id);
+    }
+
+    public async Task SeguirAsync(string idAtor, IEnumerable<string> idsAtores, DateTime dataFilme)
+    {
+        string cmdStr = _cmdStr;
+        var data = dataFilme.ToString("s");
+        for (var x = 0; x < idsAtores.Count(); x++)
+            cmdStr += $@"insert edge segue
+                            (data_filme) 
+                        values
+                            ""{idAtor}"" -> ""{idsAtores.ElementAt(x)}"":(datetime(""{data}""));";
 
         await _graphClient.OpenAsync(_iP, _port);
         _authResponse = await _graphClient.AuthenticateAsync(_connUser, _connPwd);

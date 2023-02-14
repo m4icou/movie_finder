@@ -13,6 +13,8 @@ MOVIE FINDER
 - Carregamento de dados
 	Fazer um carregamento de dados baseado no nome dos atores, trazendo todos os filmes atuados por eles. OK
 
-- Recuperar dados de atores que contracenaram com atores, ou contracenaram com atores que contracenaram com atores, etc.
+- Recuperar dados de atores que contracenaram com atores, ou contracenaram com atores que contracenaram com atores, etc. OK
 
-- Criar uma relação onde cada ator segue os atores com os quais eles contracenaram.
+- Criar uma relação onde cada ator segue os atores com os quais eles contracenaram. OK
+
+- Criar um endpoint que recupere a quantidade de passos entre um ator e outro.

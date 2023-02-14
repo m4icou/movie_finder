@@ -58,6 +58,22 @@ public class MovieController : ControllerBase
         return await _atorService.ListarAtoresCoatuacaoAsync(idAtor);
     }
 
+    [HttpGet("recuperar-distancia/{idAtorOrigem}/{idAtorDestino}")]
+    public async Task<string> RecuperarDistancia([FromRoute] string idAtorOrigem, [FromRoute] string idAtorDestino)
+    {
+        var atores = await _atorService.RecuperarDistancia(idAtorOrigem, idAtorDestino);
+
+        string caminho = null!;
+        if (atores != null && atores.Any())
+        {
+            caminho = atores!.First().Nome;
+            for (var x = 1; x < atores!.Count(); x++)
+                caminho += " -> " + atores!.ElementAt(x).Nome;
+        }
+
+        return caminho;
+    }
+
     [HttpGet("listar-seguidores/{idAtor}/{passos}")]
     public async Task<IEnumerable<Ator>?> ListarSeguidores([FromRoute] string idAtor, [FromRoute] int passos)
     {
@@ -84,11 +100,11 @@ public class MovieController : ControllerBase
 
             // Relaciona atores seguidos por cada ator.
             await _atorService.SalvarAsync(atoresFilme);
-            foreach (var ator in atoresFilme)
+            /*foreach (var ator in atoresFilme)
             {
                 var idsAtores = atoresFilme.Select(a => a.Id).Where(i => i != ator.Id);
                 await _atorService.SeguirAsync(ator.Id, idsAtores, DateTime.Now);
-            }
+            }*/
         }
 
         // Cadastra o filme e salva as atuações.
@@ -97,13 +113,13 @@ public class MovieController : ControllerBase
             await _atorService.SalvarAtuacoesFilmeAsync(item.Key, item.Value);
     }
 
-    [HttpDelete("limpar-filmes")]
+    [HttpPut("limpar-filmes")]
     public async Task LimparFilmes()
     {
         await _filmeService.LimparAsync();
     }
 
-    [HttpDelete("limpar-atores")]
+    [HttpPut("limpar-atores")]
     public async Task LimparAtores()
     {
         await _atorService.LimparAsync();

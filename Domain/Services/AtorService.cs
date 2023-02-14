@@ -81,6 +81,29 @@ public class AtorService
         return atores;
     }
 
+    public async Task<IEnumerable<Ator>?> RecuperarDistancia(string idAtorOrigem, string idAtorDestino)
+    {
+        string cmdStr = _cmdStr +
+                            $@"find shortest path with prop 
+                                from ""{idAtorOrigem}"" to ""{idAtorDestino}"" 
+                                over segue 
+                                yield path as p |
+                                yield nodes($-.p) as n |
+                                unwind $-.n as l |
+                                YIELD 
+                                    id($-.l) as id,
+                                    $-.l.nome as nome;";
+
+        await _graphClient.OpenAsync(_iP, _port);
+        _authResponse = await _graphClient.AuthenticateAsync(_connUser, _connPwd);
+        var atores = await _graphClient
+            .ExecuteAsync(_authResponse.Session_id, cmdStr)
+            .ToListAsync<Ator>();
+
+        await _graphClient.SignOutAsync(_authResponse.Session_id);
+        return atores;
+    }
+
     public async Task<IEnumerable<Ator>?> ListarSeguidores(string idAtor, int passos = 1)
     {
         string cmdStr = _cmdStr +
@@ -136,7 +159,7 @@ public class AtorService
 
     public async Task LimparAsync()
     {
-        string cmdStr = _cmdStr + 
+        string cmdStr = _cmdStr +
                             $@"LOOKUP ON ator 
                                 YIELD id(vertex) as id |
                                 delete vertex $-.id with edge;";

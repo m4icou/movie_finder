@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "FQcWpRBk0RKaqAuJcBQzDhK+U+SDhDskyZHr6FkrKnw=",
+  "Source": "movie_finder",
+  "BasePath": "_content/movie_finder",
+  "Mode": "Default",
+  "ManifestType": "Publish",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
